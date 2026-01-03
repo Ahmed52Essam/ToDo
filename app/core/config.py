@@ -15,6 +15,9 @@ class GlobalConfig(BaseConfig):
     # Defaults
     DATABASE_URL: Optional[str] = None
     DB_FORCE_ROLL_BACK: bool = False
+    SECRET_KEY: str = "please_change_this_to_a_real_secret_key_in_production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
 
 class DevConfig(GlobalConfig):
