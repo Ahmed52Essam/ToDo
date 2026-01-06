@@ -4,11 +4,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import EmailStr
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import create_access_token, get_password_hashed, verify_password
+from app.core.security import (
+    create_access_token,
+    credentials_exception,
+    get_user,
+    hash_password,
+    verify_password,
+)
 from app.db.base import User
 from app.db.session import get_db
 from app.schemas.token import Token
@@ -16,7 +20,7 @@ from app.schemas.user import UserCreate, UserOut
 
 # logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup", status_code=201, response_model=UserOut)
@@ -26,7 +30,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail="A user with that email already exists!",
         )
-    hashed_password = get_password_hashed(user.password)
+    hashed_password = hash_password(user.password)
     new_user = User()
     new_user.email = user.email
     new_user.hashed_password = hashed_password
@@ -36,7 +40,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return new_user
 
 
-@router.post("/login", status_code=201, response_model=Token)
+@router.post("/login", status_code=200, response_model=Token)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncSession = Depends(get_db),
@@ -51,18 +55,3 @@ async def login(
     #     raise credentials_exception("User has not confirmed email")
     access_token = create_access_token(email=user.email)
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-async def get_user(email: EmailStr, db: AsyncSession):
-    query = select(User).where(User.email == email)
-    result = await db.scalar(query)
-    if result:
-        return result
-
-
-def credentials_exception(exception_details: str) -> HTTPException:
-    return HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=exception_details,
-        headers={"WWW-Authenticate": "Bearer"},
-    )
