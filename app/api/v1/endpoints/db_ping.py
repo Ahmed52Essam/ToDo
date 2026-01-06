@@ -8,7 +8,7 @@ from app.db.session import get_db
 
 # logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["db"])
 
 
 @router.get("/db-ping", status_code=200)
