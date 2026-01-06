@@ -5,3 +5,4 @@ pytest
 httpx<0.28
 pytest-mock
 pyfakefs
+pytest-asyncio
