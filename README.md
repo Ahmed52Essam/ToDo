@@ -4,49 +4,66 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
 
 ## Features
 
-### Completed
-- **Health Check:** A `GET /api/v1/health` endpoint to verify that the service is running.
-- **Modular Architecture:** Clean, scalable structure with separation of concerns.
-- **Environment-based Configuration:** Using Pydantic for managing different configurations (dev, prod, test).
+- **User Authentication**: Secure registration and login using JWT (JSON Web Tokens) and bcrypt password hashing.
+- **Task Management**: Full CRUD operations for tasks.
+  - **Create**: Add new tasks with titles and descriptions.
+  - **Read**: specific task retrieval or list all user tasks.
+  - **Update**: Modify task details.
+  - **Delete**: Remove tasks.
+- **Ownership Isolation**: Users can only access and modify their own tasks.
+- **User Profile**: Endpoint to retrieve current user details.
+- **Async Database**: High-performance asynchronous database interactions using SQLAlchemy and aiosqlite.
+- **Automated Testing**: Comprehensive test suite with `pytest`, covering auth, tasks, and user flows on an isolated test database.
+- **Health Check**: Monitoring endpoint to verify service status.
+- **Modular Architecture**: Scalable, organized codebase separating concerns (schemas, endpoints, crud, models).
 
-### To Be Implemented
-- **User Authentication:** JWT-based registration and login.
-- **Database Integration:** Using SQLAlchemy and aiosqlite for asynchronous database operations.
-- **ToDo Management:** Full CRUD (Create, Read, Update, Delete) functionality for ToDo items.
-- **File Storage:** Potential integration with a cloud storage provider like Backblaze B2.
+## Project Structure
+
+```text
+├── .env
+├── .gitignore
+├── .venv/
+├── pytest.ini
+├── README.md
+├── requirements-dev.txt
+├── requirements.txt
+├── app/
+│   ├── main.py
+│   ├── api/
+│   │   ├── deps.py
+│   │   └── v1/
+│   │       ├── router.py
+│   │       └── endpoints/
+│   │           ├── auth.py
+│   │           ├── db_ping.py
+│   │           ├── health.py
+│   │           ├── tasks.py
+│   │           └── users.py
+│   ├── core/
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── db/
+│   │   ├── base.py
+│   │   └── session.py
+│   └── schemas/
+│       ├── task.py
+│       ├── token.py
+│       └── user.py
+├── data/
+│   └── test.db
+└── tests/
+    ├── conftest.py
+    ├── test_auth.py
+    ├── test_tasks.py
+    └── test_users.py
+```
 
 ## Database
 
 This project is set up to use **SQLAlchemy** with an **aiosqlite** driver for asynchronous interaction with a **SQLite** database.
 
-- **Configuration:** The database connection is managed in `app/core/config.py` and can be configured for different environments.
-- **Current Status:** The necessary libraries are included in `requirements.txt`, but the database models and operational logic are not yet implemented.
-
-## Project Analysis Summary
-
-This project is a well-structured boilerplate, ready for the implementation of its core features. It demonstrates best practices for configuration and API design in a modern Python backend.
-
-### Application Entrypoint (`app/main.py`)
-
-The `main.py` file is the core of the application. It initializes the FastAPI application and brings together the other components.
-
-*   **Middleware:** It is set up to easily add middleware for handling tasks like request correlation.
-*   **Routing:** It imports and includes the main `api_router` from `app/api/v1/router.py`. This keeps the API routing organized and modular.
-
-### Configuration (`app/core/config.py`)
-
-The `app/core/config.py` file manages the application's configuration using Pydantic's `BaseSettings`.
-
-*   **Environment-Based Configuration:** It defines different configuration classes for `dev`, `prod`, and `test` environments. This is a best practice for managing configuration in a real-world application.
-*   **`.env` File Support:** It uses `SettingsConfigDict` to load configuration from a `.env` file. This is a standard way to manage secrets and environment-specific variables.
-*   **Type-Safe Configuration:** By using Pydantic, the configuration is type-safe, providing validation and type hints for configuration variables.
-
-### API Routes (`app/api/v1/router.py`)
-
-The `app/api/v1/router.py` file defines the main API router.
-
-*   **Modular Endpoints:** It is designed to include other routers from the `app/api/v1/endpoints` directory. The initial `health` endpoint is already included.
-*   **Scalability:** This structure allows the API to be easily expanded with new features and versions.
+- **Configuration**: The database connection is managed in `app/core/config.py` in `app/db/session.py`.
+- **Testing**: Uses a separate SQLite database (`./data/test.db`) to ensure data isolation.
 
 ## Getting Started
 
@@ -86,9 +103,13 @@ These instructions will get you a copy of the project up and running on your loc
         ```
 
 3.  **Install Dependencies**
-    With your virtual environment active, install the required packages from `requirements.txt`.
+    With your virtual environment active, install the required packages.
     ```bash
+    # Install runtime dependencies
     pip install -r requirements.txt
+    
+    # Install development dependencies (for testing)
+    pip install -r requirements-dev.txt
     ```
 
 ### Running the Application
@@ -104,27 +125,43 @@ uvicorn app.main:app --reload
 
 ## Running Tests
 
-To run the automated tests for this project, you'll first need to install the development dependencies.
+To run the automated tests for this project, ensure you have installed the development dependencies.
 
-1.  **Install Development Dependencies**
-    With your virtual environment active, install the required packages from `requirements-dev.txt`.
-    ```bash
-    pip install -r requirements-dev.txt
-    ```
-
-2.  **Run Tests**
+1.  **Run Tests**
     Execute the following command to run the test suite with pytest:
     ```bash
     pytest
     ```
+    This will execute all tests in the `tests/` directory, using the isolated test database.
 
 ## API Endpoints
 
 Here is a summary of the available endpoints.
 
-| Method | Path                | Description                                  |
-|--------|---------------------|----------------------------------------------|
-| `GET`  | `/api/v1/health`    | Checks if the application is running.        |
+### Authentication
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/signup` | Register a new user. |
+| `POST` | `/api/v1/auth/login` | Login to get an access token. |
+
+### Users
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/users/me` | Get current logged-in user details. |
+
+### Tasks
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/tasks/` | Create a new task. |
+| `GET` | `/api/v1/tasks/` | Get all tasks for the current user. |
+| `GET` | `/api/v1/tasks/{task_id}` | Get a specific task by ID. |
+| `PATCH` | `/api/v1/tasks/{task_id}` | Update a specific task. |
+| `DELETE` | `/api/v1/tasks/{task_id}` | Delete a specific task. |
+
+### Health
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/health` | Checks if the application is running. |
 
 ### Deactivating the Environment
 When you are finished working, you can deactivate the virtual environment:
