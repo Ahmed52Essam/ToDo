@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import (
@@ -30,10 +31,19 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail="A user with that email already exists!",
         )
+    if user.phone_number:
+        query = select(User).where(User.phone_number == user.phone_number)
+        if await db.scalar(query):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This phone number is already used!",
+            )
+
     hashed_password = hash_password(user.password)
     new_user = User()
     new_user.email = user.email
     new_user.hashed_password = hashed_password
+    new_user.phone_number = user.phone_number
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)

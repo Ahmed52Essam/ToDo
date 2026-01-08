@@ -33,10 +33,11 @@ async def test_signup_existing_email(client: AsyncClient):
 @pytest.mark.anyio
 async def test_login(client: AsyncClient):
     # Signup first
-    await client.post(
+    response = await client.post(
         "/api/v1/auth/signup",
         json={"email": "loginuser@example.com", "password": "strongpassword"},
     )
+    # assert response.status_code == 200
 
     # Login
     response = await client.post(

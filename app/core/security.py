@@ -65,6 +65,15 @@ async def get_user(email: EmailStr, db: AsyncSession) -> User | None:
         return None
 
 
+async def get_user_by_phone(phone_number: str, db: AsyncSession) -> User | None:
+    query = select(User).where(User.phone_number == phone_number)
+    result = await db.scalar(query)
+    if result:
+        return result
+    else:
+        return None
+
+
 def credentials_exception(exception_details: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

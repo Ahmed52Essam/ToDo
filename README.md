@@ -11,7 +11,8 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
   - **Update**: Modify task details.
   - **Delete**: Remove tasks.
 - **Ownership Isolation**: Users can only access and modify their own tasks.
-- **User Profile**: Endpoint to retrieve current user details.
+- **User Profile**: Endpoint to retrieve current user details, including an optional phone number.
+- **Database Migrations**: Alembic integration for managing database schema changes.
 - **Async Database**: High-performance asynchronous database interactions using SQLAlchemy and aiosqlite.
 - **Automated Testing**: Comprehensive test suite with `pytest`, covering auth, tasks, and user flows on an isolated test database.
 - **Health Check**: Monitoring endpoint to verify service status.
@@ -23,6 +24,7 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
 ├── .env
 ├── .gitignore
 ├── .venv/
+├── alembic.ini
 ├── pytest.ini
 ├── README.md
 ├── requirements-dev.txt
@@ -49,8 +51,9 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
 │       ├── task.py
 │       ├── token.py
 │       └── user.py
-├── data/
-│   └── test.db
+├── alembic/
+│   ├── versions/
+│   └── env.py
 └── tests/
     ├── conftest.py
     ├── test_auth.py
@@ -64,6 +67,22 @@ This project is set up to use **SQLAlchemy** with an **aiosqlite** driver for as
 
 - **Configuration**: The database connection is managed in `app/core/config.py` in `app/db/session.py`.
 - **Testing**: Uses a separate SQLite database (`./data/test.db`) to ensure data isolation.
+
+### Database Migrations
+
+This project uses **Alembic** to handle database migrations.
+
+- **Creating a New Migration**:
+  When you make changes to the SQLAlchemy models (e.g., adding a column), generate a new migration script:
+  ```bash
+  alembic revision --autogenerate -m "A short description of the changes"
+  ```
+
+- **Applying Migrations**:
+  To apply all pending migrations to the database, run:
+  ```bash
+  alembic upgrade head
+  ```
 
 ## Getting Started
 

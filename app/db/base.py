@@ -41,6 +41,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    phone_number: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
 
