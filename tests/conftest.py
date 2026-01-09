@@ -1,3 +1,4 @@
+import os
 from typing import AsyncGenerator
 
 import pytest
@@ -11,13 +12,16 @@ from app.db.session import get_db
 from app.main import app
 
 # Use the test database URL from config
-TEST_DATABASE_URL = "sqlite+aiosqlite:///./data/test.db"
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://myuser:mypassword@localhost:5432/todo_test_db",
+)
 
 # Create a specific engine for tests
 test_engine = create_async_engine(
     TEST_DATABASE_URL,
     echo=True,
-    connect_args={"check_same_thread": False},  # Needed for SQLite/FastAPI
+    # REMOVED: connect_args={"check_same_thread": False} (This is only for SQLite)
 )
 
 TestingSessionLocal = async_sessionmaker(

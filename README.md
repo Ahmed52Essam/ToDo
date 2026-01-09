@@ -12,8 +12,9 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
   - **Delete**: Remove tasks.
 - **Ownership Isolation**: Users can only access and modify their own tasks.
 - **User Profile**: Endpoint to retrieve current user details, including an optional phone number.
+- **Containerized**: Runs in a Docker container for consistent development and deployment.
 - **Database Migrations**: Alembic integration for managing database schema changes.
-- **Async Database**: High-performance asynchronous database interactions using SQLAlchemy and aiosqlite.
+- **Async Database**: High-performance asynchronous database interactions with PostgreSQL.
 - **Automated Testing**: Comprehensive test suite with `pytest`, covering auth, tasks, and user flows on an isolated test database.
 - **Health Check**: Monitoring endpoint to verify service status.
 - **Modular Architecture**: Scalable, organized codebase separating concerns (schemas, endpoints, crud, models).
@@ -22,9 +23,12 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
 
 ```text
 ├── .env
+├── .dockerignore
 ├── .gitignore
 ├── .venv/
 ├── alembic.ini
+├── docker-compose.yml
+├── Dockerfile
 ├── pytest.ini
 ├── README.md
 ├── requirements-dev.txt
@@ -63,10 +67,10 @@ A REST API boilerplate for a ToDo application built with Python and FastAPI. Thi
 
 ## Database
 
-This project is set up to use **SQLAlchemy** with an **aiosqlite** driver for asynchronous interaction with a **SQLite** database.
+This project is set up to use **SQLAlchemy** with an **asyncpg** driver for asynchronous interaction with a **PostgreSQL** database.
 
 - **Configuration**: The database connection is managed in `app/core/config.py` in `app/db/session.py`.
-- **Testing**: Uses a separate SQLite database (`./data/test.db`) to ensure data isolation.
+- **Testing**: Uses a separate PostgreSQL database (`todo_test_db`) to ensure data isolation.
 
 ### Database Migrations
 
@@ -144,14 +148,20 @@ uvicorn app.main:app --reload
 
 ## Running Tests
 
-To run the automated tests for this project, ensure you have installed the development dependencies.
+To run the automated tests for this project, ensure you have installed the development dependencies and the test database exists.
 
-1.  **Run Tests**
+1.  **Prepare Test Database**
+    Ensure the test database exists in PostgreSQL:
+    ```bash
+    docker-compose exec db psql -U myuser -d todo_db -c "CREATE DATABASE todo_test_db;"
+    ```
+
+2.  **Run Tests**
     Execute the following command to run the test suite with pytest:
     ```bash
     pytest
     ```
-    This will execute all tests in the `tests/` directory, using the isolated test database.
+    This will execute all tests in the `tests/` directory, using the isolated test database (`todo_test_db`).
 
 ## API Endpoints
 
