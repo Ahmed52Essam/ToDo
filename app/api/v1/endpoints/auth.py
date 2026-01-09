@@ -44,6 +44,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     new_user.email = user.email
     new_user.hashed_password = hashed_password
     new_user.phone_number = user.phone_number
+    new_user.confirmed = False
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
