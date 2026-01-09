@@ -1,0 +1,31 @@
+services:
+  # Service 1: The Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: todo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Optional: lets you connect to DB from your PC tools (like DBeaver)
+
+  # Service 2: Your FastAPI App
+  web:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      # Notice the URL: "db" is the hostname of the service above!
+      - DEV_DATABASE_URL=postgresql+asyncpg://myuser:mypassword@db/todo_db
+    volumes:
+          - .:/app      
+    depends_on:
+      - db
+
+# Persistent Storage (so data survives if you delete containers)
+volumes:
+  postgres_data:

@@ -18,3 +18,4 @@ b2sdk
 alembic
 pydantic-extra-types
 phonenumbers
+asyncpg
