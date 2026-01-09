@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,10 +30,19 @@ async def create_task(
 
 @router.get("/", response_model=list[TaskOut], status_code=200)
 async def get_user_tasks(
+    skip: int = 0,
+    limit: int = 10,
+    search: Optional[str] = None,
+    completed: Optional[bool] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     query = select(Task).where(Task.owner_id == current_user.id)
+    if completed is not None:
+        query = query.where(Task.completed == completed)
+    if search is not None:
+        query = query.where(Task.title.ilike(f"%{search}%"))
+    query = query.offset(skip).limit(limit)
     result = await db.scalars(query)
     return result.all()
 

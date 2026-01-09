@@ -82,3 +82,44 @@ async def test_create_task_validation(client: AsyncClient, auth_headers):
         json={"title": ""},
     )
     assert res.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_search_and_filter_tasks(client: AsyncClient, auth_headers):
+    email = "filter@example.com"
+    await client.post(
+        "/api/v1/auth/signup",
+        json={"email": email, "password": "password"},
+    )
+    headers = await auth_headers(email)
+
+    # Create 3 tasks
+    # 1. Buy Groceries (Pending)
+    await client.post(
+        "/api/v1/tasks/", headers=headers, json={"title": "Buy Groceries"}
+    )
+    # 2. Buy Milk (Completed) - We need to patch this one to be completed
+    res = await client.post(
+        "/api/v1/tasks/", headers=headers, json={"title": "Buy Milk"}
+    )
+    task_id = res.json()["id"]
+    await client.patch(
+        f"/api/v1/tasks/{task_id}", headers=headers, json={"completed": True}
+    )
+    # 3. Do Homework (Pending)
+    await client.post("/api/v1/tasks/", headers=headers, json={"title": "Do Homework"})
+
+    # Test 1: Filter by Completed=True (Should get "Buy Milk")
+    res = await client.get("/api/v1/tasks/?completed=true", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert len(data) == 1
+    assert data[0]["title"] == "Buy Milk"
+
+    # Test 2: Search for "buy" (Should get "Buy Groceries" and "Buy Milk")
+    res = await client.get("/api/v1/tasks/?search=buy", headers=headers)
+    assert len(res.json()) == 2
+
+    # Test 3: Pagination (Limit 1)
+    res = await client.get("/api/v1/tasks/?limit=1", headers=headers)
+    assert len(res.json()) == 1
