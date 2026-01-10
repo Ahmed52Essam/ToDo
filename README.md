@@ -79,13 +79,13 @@ This project uses **Alembic** to handle database migrations.
 - **Creating a New Migration**:
   When you make changes to the SQLAlchemy models (e.g., adding a column), generate a new migration script:
   ```bash
-  alembic revision --autogenerate -m "A short description of the changes"
+  docker-compose exec web alembic revision --autogenerate -m "describe_your_change"
   ```
 
 - **Applying Migrations**:
   To apply all pending migrations to the database, run:
   ```bash
-  alembic upgrade head
+  docker-compose exec web alembic upgrade head
   ```
 
 ## Getting Started
@@ -136,6 +136,19 @@ These instructions will get you a copy of the project up and running on your loc
     ```
 
 ### Running the Application
+
+#### Option 1: Using Docker (Recommended)
+
+To start the application using Docker Compose, run:
+
+```bash
+docker-compose up --build -d
+```
+
+- The API will be running at **http://127.0.0.1:8000**.
+- You can access the interactive API documentation (Swagger UI) at **http://127.0.0.1:8000/docs**.
+
+#### Option 2: Running Locally
 
 Once the dependencies are installed, you can start the development server using Uvicorn.
 
